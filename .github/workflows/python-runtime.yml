@@ -20,5 +20,5 @@ jobs:
         run: |
           $py = @(Get-ChildItem runtime -Filter python.exe -Recurse)[0].FullName
           Write-Host "Python executable: $py"
-          uv pip install --python "$py" "transkun==2.0.1" "setuptools<81"
+          uv pip install --python "$py" --break-system-packages "transkun==2.0.1" "setuptools<81"
           & $py -c "import transkun.transcribe, torch, pretty_midi; print(torch.__version__)"
