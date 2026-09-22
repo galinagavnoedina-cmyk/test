@@ -1,0 +1,4 @@
+transkun==2.0.1
+miniaudio
+mido
+setuptools<81
