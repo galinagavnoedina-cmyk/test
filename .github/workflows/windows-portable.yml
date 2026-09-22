@@ -1,0 +1,56 @@
+name: Portable Muse for Windows
+on:
+  push:
+    branches:
+      - codex/windows-portable-zip
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri -> target
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - name: Prepare portable Python
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          uv python install 3.11 --install-dir .runtime-build
+          if ($LASTEXITCODE -ne 0) { throw 'Python download failed' }
+          $py = @(Get-ChildItem .runtime-build -Filter python.exe -Recurse)[0].FullName
+          uv pip install --python "$py" --break-system-packages -r python/requirements-win.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Transkun install failed' }
+          New-Item -ItemType Directory app/src-tauri/runtime -Force | Out-Null
+          Copy-Item (Join-Path (Split-Path $py) '*') app/src-tauri/runtime -Recurse -Force
+          & app/src-tauri/runtime/python.exe -c "import transkun.transcribe, miniaudio, torch; print(torch.__version__)"
+          if ($LASTEXITCODE -ne 0) { throw 'Python import failed' }
+      - name: Build application binary
+        working-directory: app
+        run: |
+          npm ci
+          npm run tauri -- build --no-bundle
+      - name: Assemble portable folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory portable/runtime, portable/python -Force | Out-Null
+          Copy-Item app/src-tauri/target/release/muse.exe portable/Muse.exe
+          Copy-Item app/src-tauri/runtime/* portable/runtime/ -Recurse -Force
+          Copy-Item python/* portable/python/ -Recurse -Force
+          if (!(Test-Path portable/runtime/python.exe) -or !(Test-Path portable/python/pipeline.py)) { throw 'Runtime resource missing' }
+          $bytes = (Get-ChildItem portable -File -Recurse | Measure-Object -Property Length -Sum).Sum
+          Write-Host "Portable folder bytes: $bytes"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Muse-0.1.1-Windows-portable
+          path: portable/
+          compression-level: 1
+          if-no-files-found: error
