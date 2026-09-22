@@ -1,0 +1,43 @@
+# Manually build a Windows installer without creating a public release.
+name: Windows installer (manual)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/windows-build
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri -> target
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
+      - name: Build Windows NSIS installer
+        working-directory: app
+        run: npm run tauri -- build --bundles nsis
+      - name: Check installer
+        shell: pwsh
+        run: |
+          $installers = @(Get-ChildItem 'app/src-tauri/target/release/bundle/nsis/*-setup.exe')
+          if ($installers.Count -eq 0) { throw 'NSIS installer not found' }
+          $installers | ForEach-Object { Get-FileHash $_.FullName -Algorithm SHA256 | Format-List }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: muse-0.1.1-windows-installer
+          path: app/src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
