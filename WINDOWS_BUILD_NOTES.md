@@ -1,32 +1,24 @@
-# Windows build status
+# Muse 0.1.1 — Windows x64 build
 
-The manual workflow `.github/workflows/windows-installer.yml` builds the
-Tauri desktop installer on a Windows runner and uploads the `*-setup.exe`
-as a workflow artifact. In GitHub Actions, open **Windows installer (manual)**,
-select **Run workflow**, then download the artifact from the finished run.
-The source archive must first be placed in a GitHub repository; unpack its
-contents at the repository root. A private repository is fine.
+[Download the CI artifact](https://github.com/galinagavnoedina-cmyk/test/actions/runs/35782013231/artifacts/10719516398).
+Unzip it and run `Muse_0.1.1_x64-setup.exe`. The installer is unsigned.
 
-This archive fixes the Python script packaging bug: Tauri now bundles the
-`python/` directory as resources and resolves it through the Tauri resource
-directory instead of assuming an unpacked source tree. The Rust package
-version is also synchronized with the app version.
+SHA-256 of the installer:
+`58EA1332F32010C064E092AFE4122FDD8D6116D560CD0DBD4D50030EA29031A6`.
 
-**The installer has not been compiled or tested on Windows.** The current
-execution environment is Linux and has no Rust toolchain or Windows runner.
-More importantly, this source does not yet provide a working standalone
-transcription install:
+This build bundles an isolated Python 3.11 runtime, Transkun 2.0.1 and its
+model, and miniaudio decoding. No system Python, Colab, Hugging Face, or
+ffmpeg installation is needed for the **Solo Piano** mode.
 
-- The Tauri GUI expects `~/.audio2sheets/venv/Scripts/python.exe`, but no GUI
-  command creates or populates it. The CLI has separate setup code that the
-  GUI does not invoke.
-- `python/requirements.txt` omits `transkun`, which `python/pipeline.py`
-  imports. A dependency declaration and a smoke test against the actual
-  Transkun API are still necessary.
-- PM2S weights and YourMT3 code/checkpoints are not bundled. The CLI has
-  setup logic for PM2S, but the GUI never runs it.
+The original GUI's Multi-Instrument / YourMT3 mode was hidden because its
+model and code are absent from the source archive. The Windows build returns
+the raw Transkun MIDI in both `.mid` and `.perf.mid`: physical key release
+timings and pedal CC events are preserved. Hand splitting, quantized score,
+Demucs stem separation, and MusicXML export are not included in this build.
+It works best with a recording containing only piano.
 
-The uploaded workflow builds a Windows **GUI installer**, not an offline
-ready-to-transcribe program. Do not treat an installer artifact as proof that
-the audio-to-MIDI pipeline works. A standalone build needs a Windows Python
-runtime, compatible ML dependencies, models, and actual end-to-end tests.
+Windows CI built the installer and used the bundled runtime to transcribe
+a synthetic WAV into MIDI. The GUI has not been interactively tested on the
+user's Windows computer, and no real piano recording has been benchmarked.
+The CI artifact expires on 2026-12-21; the branch source retains the build
+workflow.
