@@ -16,7 +16,7 @@ export default function PreviewModal(props: PreviewModalProps) {
   const [playing, setPlaying] = createSignal(false)
   const [currentTime, setCurrentTime] = createSignal(0)
   const [duration, setDuration] = createSignal(0)
-  const [backend, setBackend] = createSignal<Backend | null>(null)
+  const [backend] = createSignal<Backend | null>('transkun')
   const [ready, setReady] = createSignal(false)
 
   const formatTime = (s: number) => {
@@ -115,21 +115,8 @@ export default function PreviewModal(props: PreviewModalProps) {
         </div>
 
         <div class="flex flex-col gap-2">
-          <span class="text-xs font-medium text-text-secondary uppercase tracking-wider">Mode</span>
-          <div class="flex items-center gap-1 p-1 rounded-xl glass">
-            {(['transkun', 'yourmt3'] as Backend[]).map((b) => (
-              <button
-                onClick={() => setBackend(b)}
-                class="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                style={{
-                  background: backend() === b ? 'rgba(139,92,246,0.2)' : 'transparent',
-                  color: backend() === b ? '#a78bfa' : 'rgba(255,255,255,0.4)',
-                }}
-              >
-                {b === 'transkun' ? 'Solo Piano' : 'Multi-Instrument'}
-              </button>
-            ))}
-          </div>
+          <span class="text-xs font-medium text-text-secondary uppercase tracking-wider">Solo Piano · Transkun V2</span>
+          <p class="text-xs text-text-secondary">Performance MIDI preserves separate key releases and sustain pedal events.</p>
         </div>
 
         <button

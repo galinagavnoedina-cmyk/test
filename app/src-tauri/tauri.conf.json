@@ -37,7 +37,8 @@
   },
   "bundle": {
     "resources": {
-      "../../python/": "python/"
+      "../../python/": "python/",
+      "runtime/": "runtime/"
     },
     "icon": [
       "icons/icon.ico"

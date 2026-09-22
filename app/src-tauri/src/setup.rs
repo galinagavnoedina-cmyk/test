@@ -7,12 +7,23 @@ fn audio2sheets_dir() -> PathBuf {
         .join(".audio2sheets")
 }
 
-pub fn get_venv_python() -> PathBuf {
+pub fn get_venv_python(app: &AppHandle) -> Result<PathBuf, String> {
+    if let Ok(resources) = app.path().resource_dir() {
+        let bundled = resources.join("runtime").join("python.exe");
+        if bundled.exists() {
+            return Ok(bundled);
+        }
+    }
     let venv = audio2sheets_dir().join("venv");
-    if cfg!(target_os = "windows") {
+    let installed = if cfg!(target_os = "windows") {
         venv.join("Scripts").join("python.exe")
     } else {
         venv.join("bin").join("python")
+    };
+    if installed.exists() {
+        Ok(installed)
+    } else {
+        Err("Python runtime not found in the application resources.".to_string())
     }
 }
 

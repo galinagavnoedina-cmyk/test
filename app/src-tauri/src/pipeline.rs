@@ -53,10 +53,7 @@ pub async fn start_pipeline(
     backend: Option<String>,
     solo_piano: Option<bool>,
 ) -> Result<PipelineResult, String> {
-    let venv_python = get_venv_python();
-    if !venv_python.exists() {
-        return Err("Python environment not set up. Please run setup first.".to_string());
-    }
+    let venv_python = get_venv_python(&app)?;
 
     let python_dir = get_python_dir(&app)?;
     let script = python_dir.join("pipeline.py");
