@@ -125,7 +125,7 @@ export default function PreviewModal(props: PreviewModalProps) {
         </div>
 
         <div class="flex flex-col gap-2">
-          <span class="text-xs font-medium text-text-secondary uppercase tracking-wider">Solo Piano · Transkun V2 · Audio fix</span>
+          <span class="text-xs font-medium text-text-secondary uppercase tracking-wider">Solo Piano · Transkun V2 · Unicode fix</span>
           <p class="text-xs text-text-secondary">Performance MIDI preserves separate key releases and sustain pedal events.</p>
         </div>
 
