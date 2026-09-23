@@ -8,6 +8,7 @@ on:
       - codex/windows-build
       - codex/windows-runtime
       - codex/windows-audio-fix
+      - codex/windows-unicode-audio
 
 permissions:
   contents: read
@@ -46,8 +47,9 @@ jobs:
         run: |
           $py = Join-Path $pwd 'app/src-tauri/runtime/python.exe'
           & $py -c "import math,struct,wave; w=wave.open('probe.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(44100); w.writeframes(b''.join(struct.pack('<h',int(5000*math.sin(2*math.pi*440*i/44100))) for i in range(88200))); w.close()"
-          & $py python/pipeline.py probe.wav --solo-piano
-          if ($LASTEXITCODE -ne 0 -or !(Test-Path probe.perf.mid)) { throw 'Transcription smoke test failed' }
+          Copy-Item probe.wav "тест-звук.wav"
+          & $py python/pipeline.py "тест-звук.wav" --solo-piano
+          if ($LASTEXITCODE -ne 0 -or !(Test-Path "тест-звук.perf.mid")) { throw 'Transcription smoke test failed' }
       - name: Install frontend dependencies
         working-directory: app
         run: npm ci
@@ -62,6 +64,6 @@ jobs:
           $installers | ForEach-Object { Get-FileHash $_.FullName -Algorithm SHA256 | Format-List }
       - uses: actions/upload-artifact@v4
         with:
-          name: muse-0.1.1-windows-audio-fix
+          name: muse-0.1.1-windows-unicode-fix
           path: app/src-tauri/target/release/bundle/nsis/*-setup.exe
           if-no-files-found: error
