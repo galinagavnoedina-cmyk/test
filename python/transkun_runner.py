@@ -26,8 +26,12 @@ def run_transkun(input_path, output_path):
     model.load_state_dict(state, strict=False)
     model.eval()
 
-    decoded = miniaudio.decode_file(
-        input_path,
+    # Python opens Unicode Windows paths; miniaudio.decode_file passes a narrow
+    # filename to its C decoder and reports MA_DOES_NOT_EXIST for Cyrillic names.
+    with open(input_path, "rb") as audio_file:
+        audio_data = audio_file.read()
+    decoded = miniaudio.decode(
+        audio_data,
         output_format=miniaudio.SampleFormat.FLOAT32,
         nchannels=1,
         sample_rate=model.fs,
